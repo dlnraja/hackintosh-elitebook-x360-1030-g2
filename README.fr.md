@@ -45,7 +45,7 @@ Certains dépôts GitHub parlent de LPDDR3, de deux ports USB-C ou d'un clickpad
 | Les sources ACPI compilent avec iasl, 0 avertissement | Fait localement avec iasl 20230628 |
 | Les URL correspondent aux publications de `versions.env`, empreintes dans `scripts/checksums.sha256` | Fait par le script |
 | Série, MLB, UUID et ROM restent des placeholders dans git | Imposé par le script |
-| `ocvalidate` d'OpenCore 1.0.8 | Exécuté par `.github/workflows/efi.yml` sur `macos-latest`. Le binaire est Mach-O : un poste Linux l'ignore, sauf avec `--require-ocvalidate`. |
+| `ocvalidate` d'OpenCore 1.0.8 | Le script lance `ocvalidate.linux` sous Linux et le binaire Mach-O `ocvalidate` sous macOS. Les deux jobs GitHub Actions passent `--require-ocvalidate`. Un passage local le 2026-10-26 n'a signalé aucun problème. |
 | Démarrage, veille, charge, dalle | **Non testé** |
 | Wi-Fi, Bluetooth, audio, trackpad, tactile, stylet, microSD, Thunderbolt, webcam, pourcentage de batterie | **Non testé** |
 

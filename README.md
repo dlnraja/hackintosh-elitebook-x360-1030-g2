@@ -45,7 +45,7 @@ Some GitHub READMEs for this chassis say LPDDR3, two USB-C ports, or an AlpsAlpi
 | ACPI sources compile with iasl, 0 warnings | Done locally with iasl 20230628 |
 | Download URLs match the GitHub releases listed in `versions.env`, hashes in `scripts/checksums.sha256` | Done by the builder |
 | Placeholder serial / MLB / UUID / ROM, never a generated serial in git | Enforced by the builder |
-| `ocvalidate` from OpenCore 1.0.8 | Run by `.github/workflows/efi.yml` on `macos-latest`. It is a Mach-O tool, so a Linux checkout skips it unless you pass `--require-ocvalidate`. |
+| `ocvalidate` from OpenCore 1.0.8 | The builder runs `ocvalidate.linux` on Linux and the Mach-O `ocvalidate` on macOS. Both GitHub Actions jobs pass `--require-ocvalidate`. A local run on 2026-10-26 reported no issues. |
 | The laptop boots, sleeps, charges, or drives the panel | **Not tested** |
 | Wi-Fi, Bluetooth, audio, trackpad, touchscreen, pen, microSD, Thunderbolt, webcam, battery percentage | **Not tested** |
 

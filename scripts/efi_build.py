@@ -142,6 +142,12 @@ def safe_extract(archive: Path, dest: Path) -> None:
             if root != target and root not in target.parents:
                 raise SystemExit(f"zip slip in {archive.name}: {name}")
         package.extractall(root)
+        if os.name == "posix":
+            for info in package.infolist():
+                mode = (info.external_attr >> 16) & 0o777
+                target = root / info.filename
+                if mode and target.is_file():
+                    os.chmod(target, mode)
 
 
 def github(repo: str, tag: str, asset: str) -> str:
@@ -730,7 +736,14 @@ def lint_config(config: dict, versions: dict[str, str], wifi: str, alcid: int) -
         raise SystemExit("ig-platform-id mismatch")
 
 
+def mark_executable(path: Path) -> None:
+    if os.name != "posix":
+        return
+    path.chmod(path.stat().st_mode | 0o755)
+
+
 def can_execute(path: Path) -> bool:
+    mark_executable(path)
     try:
         subprocess.run([str(path)], capture_output=True, text=True, check=False)
     except OSError:
@@ -739,16 +752,24 @@ def can_execute(path: Path) -> bool:
 
 
 def run_ocvalidate(opencore: Path, config_path: Path, required: bool) -> None:
-    candidates = list(opencore.rglob("ocvalidate"))
-    candidates = [path for path in candidates if path.is_file() and not path.name.endswith(".exe")]
-    runnable = next((path for path in candidates if os.access(path, os.X_OK) and can_execute(path)), None)
+    if sys.platform.startswith("linux"):
+        names = ("ocvalidate.linux", "ocvalidate")
+    elif sys.platform == "win32":
+        names = ("ocvalidate.exe",)
+    else:
+        names = ("ocvalidate",)
+    candidates: list[Path] = []
+    for name in names:
+        candidates.extend(path for path in opencore.rglob(name) if path.is_file())
+    runnable = next((path for path in candidates if can_execute(path)), None)
     if runnable is None:
-        message = "ocvalidate from the OpenCore release is not runnable on this OS"
+        tried = ", ".join(str(path) for path in candidates) or "none found"
+        message = f"ocvalidate from the OpenCore release is not runnable on this OS (tried {tried})"
         if required:
             raise SystemExit(message)
-        print(f"skip     {message}")
+        print(f"skip     {message}", flush=True)
         return
-    print(f"validate {runnable}")
+    print(f"validate {runnable}", flush=True)
     result = subprocess.run([str(runnable), str(config_path)], text=True, capture_output=True, check=False)
     sys.stdout.write(result.stdout)
     sys.stderr.write(result.stderr)
