@@ -1,0 +1,30 @@
+name: EFI
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  assemble-linux:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install the ACPI compiler
+        run: sudo apt-get update && sudo apt-get install -y acpica-tools
+      - name: Assemble the EFI
+        run: bash scripts/build-efi.sh
+
+  validate-macos:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install the ACPI compiler
+        run: brew install acpica
+      - name: Assemble the EFI and run ocvalidate
+        run: bash scripts/build-efi.sh --require-ocvalidate
+      - uses: actions/upload-artifact@v4
+        with:
+          name: EliteBook-x360-1030-G2-OpenCore
+          path: dist/EliteBook-x360-1030-G2-OpenCore.zip
+          if-no-files-found: error
