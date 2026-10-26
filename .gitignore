@@ -5,3 +5,5 @@ user/*.kext
 *.part
 .DS_Store
 .firecrawl/
+__pycache__/
+*.pyc
